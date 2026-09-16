@@ -1,0 +1,56 @@
+{
+  "name": "fly-miko",
+  "version": "1.0.0",
+  "description": "固定LIF回路と物理身体を接続し、ランダム初期姿勢2通りの平均で594パラメータを学習する実験。",
+  "private": true,
+  "scripts": {
+    "brain:prepare": "python3 scripts/prepare_brain_binding.py",
+    "brain:build": "npm run brain:prepare && .venv/bin/python -m simulation.connectome",
+    "brain:test": ".venv/bin/python -m unittest discover -s tests -p 'test_brain.py' -v",
+    "brain:record-activity": ".venv/bin/python -m simulation.activity",
+    "train": ".venv/bin/python -m simulation.train",
+    "training:check": "node scripts/render_demo.cjs --check-training",
+    "training:render": "node scripts/render_demo.cjs --render-training",
+    "bridge:test": "node --test tests/bridge.test.mjs",
+    "bridge:check": "npm run bridge:test",
+    "demo:preview": "node scripts/render_demo.cjs --serve",
+    "demo:render": "node scripts/render_demo.cjs --render-training",
+    "repo:check": "python3 scripts/check_repository.py",
+    "training:archive": ".venv/bin/python -m simulation.generation_archive"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tawada/fly-miko.git"
+  },
+  "keywords": [],
+  "author": "",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/tawada/fly-miko/issues"
+  },
+  "homepage": "https://github.com/tawada/fly-miko#readme",
+  "dependencies": {
+    "three": "0.160.1"
+  },
+  "devDependencies": {
+    "ffmpeg-static": "5.3.0",
+    "playwright": "1.63.0"
+  },
+  "license": "UNLICENSED",
+  "files": [
+    "README.md",
+    "NOTICE.md",
+    "LICENSES.md",
+    "docs/",
+    "config/",
+    "demo/",
+    "scripts/*.*",
+    "simulation/*.py",
+    "src/",
+    "tests/*.*",
+    "third_party/",
+    "requirements-sim.txt",
+    "Dockerfile",
+    ".dockerignore"
+  ]
+}

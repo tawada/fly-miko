@@ -1,0 +1,4 @@
+mujoco==3.13.0
+numpy==2.4.6
+numba==0.67.0
+pyarrow==25.0.1

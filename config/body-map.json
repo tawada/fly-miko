@@ -1,0 +1,45 @@
+{
+  "id": "miko-biped-18-v1",
+  "units": "radians",
+  "coordinateSystem": "three-right-handed-y-up",
+  "rotationOrder": "XYZ",
+  "description": "Engineering control coordinates tested with a supported MuJoCo calibration body; not a biological homology or a validated walking controller.",
+  "filter": { "rateTimeConstantSeconds": 0.05, "rateScaleHz": 100, "maxRateHz": 500 },
+  "profiles": {
+    "sakura-miko-1": {
+      "baseEuler": { "左腕": [0, 0, -0.85], "右腕": [0, 0, 0.85] }
+    },
+    "sakura-miko-2": {
+      "baseEuler": { "左腕": [0, 0, -0.85], "右腕": [0, 0, 0.85] }
+    }
+  },
+  "joints": [
+    { "id": "left_hip_pitch", "bone": "左足", "axis": "x", "sign": -1, "min": -0.6, "neutral": 0, "max": 0.9, "maxSpeed": 3 },
+    { "id": "left_hip_roll", "bone": "左足", "axis": "z", "sign": 1, "min": -0.25, "neutral": 0, "max": 0.4, "maxSpeed": 2 },
+    { "id": "left_hip_yaw", "bone": "左足", "axis": "y", "sign": 1, "min": -0.35, "neutral": 0, "max": 0.35, "maxSpeed": 2 },
+    { "id": "left_knee", "bone": "左ひざ", "axis": "x", "sign": 1, "min": 0, "neutral": 0.08, "max": 1.5, "maxSpeed": 4 },
+    { "id": "left_ankle_pitch", "bone": "左足首", "axis": "x", "sign": -1, "min": -0.45, "neutral": 0, "max": 0.45, "maxSpeed": 3 },
+    { "id": "left_ankle_roll", "bone": "左足首", "axis": "z", "sign": 1, "min": -0.25, "neutral": 0, "max": 0.25, "maxSpeed": 2 },
+    { "id": "right_hip_pitch", "bone": "右足", "axis": "x", "sign": -1, "min": -0.6, "neutral": 0, "max": 0.9, "maxSpeed": 3 },
+    { "id": "right_hip_roll", "bone": "右足", "axis": "z", "sign": -1, "min": -0.25, "neutral": 0, "max": 0.4, "maxSpeed": 2 },
+    { "id": "right_hip_yaw", "bone": "右足", "axis": "y", "sign": 1, "min": -0.35, "neutral": 0, "max": 0.35, "maxSpeed": 2 },
+    { "id": "right_knee", "bone": "右ひざ", "axis": "x", "sign": 1, "min": 0, "neutral": 0.08, "max": 1.5, "maxSpeed": 4 },
+    { "id": "right_ankle_pitch", "bone": "右足首", "axis": "x", "sign": -1, "min": -0.45, "neutral": 0, "max": 0.45, "maxSpeed": 3 },
+    { "id": "right_ankle_roll", "bone": "右足首", "axis": "z", "sign": -1, "min": -0.25, "neutral": 0, "max": 0.25, "maxSpeed": 2 },
+    { "id": "torso_pitch", "bone": "上半身", "axis": "x", "sign": 1, "min": -0.25, "neutral": 0, "max": 0.3, "maxSpeed": 2 },
+    { "id": "torso_roll", "bone": "上半身", "axis": "z", "sign": -1, "min": -0.2, "neutral": 0, "max": 0.2, "maxSpeed": 2 },
+    { "id": "left_shoulder_pitch", "bone": "左腕", "axis": "x", "sign": -1, "min": -0.5, "neutral": 0, "max": 0.7, "maxSpeed": 3 },
+    { "id": "right_shoulder_pitch", "bone": "右腕", "axis": "x", "sign": -1, "min": -0.5, "neutral": 0, "max": 0.7, "maxSpeed": 3 },
+    { "id": "left_elbow", "bone": "左ひじ", "axis": "x", "sign": -1, "min": 0, "neutral": 0.15, "max": 1.4, "maxSpeed": 4 },
+    { "id": "right_elbow", "bone": "右ひじ", "axis": "x", "sign": -1, "min": 0, "neutral": 0.15, "max": 1.4, "maxSpeed": 4 }
+  ],
+  "feedback": [
+    { "id": "jointAngles", "size": 18, "units": "rad", "order": "joints" },
+    { "id": "jointVelocities", "size": 18, "units": "rad/s", "order": "joints" },
+    { "id": "projectedGravity", "size": 3, "units": "unit-vector", "frame": "body", "order": "xyz" },
+    { "id": "linearVelocity", "size": 3, "units": "m/s", "frame": "body", "order": "xyz" },
+    { "id": "angularVelocity", "size": 3, "units": "rad/s", "frame": "body", "order": "xyz" },
+    { "id": "footContacts", "size": 2, "units": "0-or-1", "order": "left,right" },
+    { "id": "targetVelocity", "size": 3, "units": "m/s", "frame": "body", "order": "xyz" }
+  ]
+}

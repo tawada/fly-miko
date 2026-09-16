@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fly Miko — 固有感覚と接地</title>
+<style>
+@font-face{font-family:Noto;src:url('/assets/fonts/NotoSansJP.ttf')}*{box-sizing:border-box}
+body{margin:0;background:#faf7f8;color:#443c4a;font:13px Noto,Arial,sans-serif}
+header{padding:22px 30px 15px;border-bottom:1px solid #eadfe5;display:flex;justify-content:space-between;align-items:center;gap:20px}
+.eyebrow{font:11px Arial,sans-serif;letter-spacing:3px;color:#b66784}
+h1{font-size:25px;margin:5px 0}p{margin:5px 0;color:#807584;line-height:1.7}
+.badge{background:#f1e4d3;color:#7c613c;padding:9px 14px;border-radius:20px;white-space:nowrap}
+main{display:grid;grid-template-columns:minmax(360px,1fr) minmax(380px,490px);height:calc(100vh - 127px);min-height:610px}
+#stage{position:relative;min-height:510px;background:#f9eeee;overflow:hidden}
+#stage canvas{display:block}#stage-notes{position:absolute;top:18px;left:24px;font-size:11px;color:#967387}
+#credit{position:absolute;left:24px;bottom:14px;color:#937c85;font-size:10px}
+#playback{position:absolute;bottom:38px;left:20px;right:20px;background:#ffffffdd;border:1px solid #e9d9e0;border-radius:12px;padding:12px}
+.row{display:flex;align-items:center;justify-content:space-between;gap:12px}
+button,select{font:inherit;color:inherit;background:white;border:1px solid #ddcdd5;border-radius:7px;padding:6px 10px}
+button{cursor:pointer}button:disabled{opacity:.5}input[type=range]{width:100%;accent-color:#cc7393}
+input[type=checkbox]{accent-color:#cc7393}aside{overflow:auto;padding:16px 22px}
+.card{background:white;border:1px solid #eadfe5;border-radius:12px;padding:14px;margin-bottom:13px}
+h2{font-size:13px;margin:0 0 10px;font-weight:600}
+.feet{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.foot{padding:12px;border-radius:8px;background:#f6f3f5}
+.foot strong{display:block;font:25px Arial,sans-serif;margin:8px 0}
+.contact{font-size:11px;color:#267d75}.air{color:#a08291}
+.legend{font-size:10px;color:#9c7190}.measured{color:#1b958e}
+.chart{width:100%;height:108px;display:block}.chart.small{height:65px}
+.explanation{font-size:11px;line-height:1.7;color:#8e808b}
+#error{position:fixed;bottom:0;background:#fff0f0;color:#a40000;white-space:pre-wrap;z-index:10}
+@media(max-width:800px){main{display:block;height:auto}#stage{height:600px}aside{overflow:visible}header{padding:15px}.badge{font-size:10px}}
+body.embedded header,body.embedded aside{display:none}
+body.embedded main{display:block;height:100vh;min-height:0}
+body.embedded #stage{height:100vh;min-height:0}
+</style>
+<header>
+ <div><div class="eyebrow">FLY MIKO / SENSORY LAB 01</div><h1>脚の動きを、感覚に変える。</h1><p>物理状態 → 固有感覚・触覚 → ハエへの外部刺激</p></div>
+ <span class="badge" id="mode-badge">腰支持あり・感覚校正・未学習</span>
+</header>
+<main>
+ <section id="stage">
+  <div id="stage-notes">MuJoCo実測姿勢の再生<br>自作の物理形状をそのまま表示</div>
+  <div id="playback">
+   <div class="row">
+    <button id="toggle" disabled>一時停止</button><span id="clock">読込中</span>
+    <select id="scenario" aria-label="実験"><option value="calibration">腰支持：脚の感覚を検査</option><option value="free-body">支持なし：未学習の身体</option></select>
+   </div>
+   <input id="seek" type="range" min="0" max="8" step="0.02" value="0" aria-label="再生位置">
+   <div class="row"><label><input id="colliders" type="checkbox">ワイヤーフレーム表示</label><span id="root-height"></span></div>
+  </div>
+  <div id="credit">自作の物理ボディ · 球・カプセル・箱の形状で表示</div>
+ </section>
+ <aside>
+  <div class="card"><h2>足裏の接触と荷重（実測）</h2>
+   <div class="feet"><div class="foot">左足<strong id="left-force">— N</strong><span id="left-contact"></span></div>
+   <div class="foot">右足<strong id="right-force">— N</strong><span id="right-contact"></span></div></div>
+   <canvas id="contact-chart" class="chart small"></canvas>
+   <div class="explanation">接触力 0.5 N 超を接地として検出。上段＝左足、下段＝右足。</div>
+  </div>
+  <div class="card">
+   <div class="row"><h2>指令と実際の関節角</h2><select id="joint" aria-label="表示関節"></select></div>
+   <canvas id="joint-chart" class="chart"></canvas>
+   <div class="row"><span class="legend">━ 指令角 <span class="measured">━ 実測角</span></span><span id="joint-value"></span></div>
+  </div>
+  <div class="card"><h2 id="receptor-title">人工受容器の活動</h2>
+   <canvas id="receptor-chart" class="chart"></canvas>
+   <div class="explanation" id="receptor-legend"></div>
+  </div>
+  <div class="card"><h2>全身の接触と重力方向</h2>
+   <pre id="body-touch" class="explanation"></pre><p id="gravity-vector" class="explanation"></p>
+  </div>
+  <div class="card"><h2>脳への入力の境界</h2>
+   <p id="input-summary"></p>
+   <div class="explanation" id="brain-boundary">上行性ニューロン候補への刺激要求を記録しています。生物学的な対応関係・神経の発火を再現した値ではありません。全脳シミュレーターは未接続です。</div>
+  </div>
+ </aside>
+</main>
+<div id="error"></div>
+<script type="importmap">{"imports":{"three":"/node_modules/three/build/three.module.js","three/addons/":"/node_modules/three/examples/jsm/"}}</script>
+<script type="module" src="/demo/sensory.js"></script>
+</html>

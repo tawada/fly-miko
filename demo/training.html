@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ja">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Fly Miko — 脳と身体の学習</title>
+<style>
+@font-face{font-family:Noto;src:url('/assets/fonts/NotoSansJP.ttf')}*{box-sizing:border-box}
+body{margin:0;background:#f8f6fa;color:#393344;font:13px Noto,Arial,sans-serif}
+header{padding:20px 28px;border-bottom:1px solid #e8dfea;display:flex;justify-content:space-between;gap:20px;align-items:center}
+.eyebrow{color:#a6658b;font:11px Arial,sans-serif;letter-spacing:3px}h1{margin:5px 0;font-size:24px}
+p{margin:4px 0;color:#87798a;font-size:12px}.controls{display:flex;gap:8px;align-items:center}
+select,button{font:inherit;border:1px solid #dacbdf;border-radius:7px;background:white;padding:7px 10px;color:inherit;cursor:pointer}
+.stats{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;padding:16px 24px}
+.stat,.card{border:1px solid #e7dfea;border-radius:12px;background:white;padding:13px}
+.stat span{display:block;color:#8e7b8f;font-size:11px}.stat strong{display:block;font:23px Arial,sans-serif;margin-top:6px}
+main{display:grid;grid-template-columns:minmax(480px,1fr) minmax(400px,480px);gap:16px;padding:0 24px 24px}
+iframe{width:100%;height:670px;border:1px solid #e7dfea;border-radius:12px;background:#f9eeee}
+.card{margin-bottom:13px}h2{font-size:13px;margin:0 0 9px}.chart{width:100%;height:115px;display:block}
+#spikes{height:178px}.row{display:flex;justify-content:space-between;gap:8px}.small{font-size:10px;color:#8b7d90;line-height:1.6}
+table{border-collapse:collapse;width:100%;font-size:11px}td,th{text-align:right;padding:7px 3px;border-bottom:1px solid #eee7ef}
+td:first-child,th:first-child{text-align:left}.note{margin:10px 4px;font-size:11px;color:#8e7a8e;line-height:1.7}
+#status{color:#9b6489}#error{color:#ad2646;white-space:pre-wrap}#empty{padding:40px;display:none}
+#activity-card{margin-top:14px}#neuron-map{width:100%;height:auto;image-rendering:pixelated;background:#151b2b;display:block;cursor:crosshair}
+#activity-trend{height:110px}#neuron-raster{height:210px}#activity-stats{margin:10px 0;color:#514560}
+.activity-controls{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.activity-controls input{width:210px;padding:7px;border:1px solid #dacbdf;border-radius:7px}
+#neuron-detail{min-height:38px;overflow-wrap:anywhere}
+.activity-controls input[type=checkbox]{width:auto}
+[hidden]{display:none!important}
+@media(max-width:950px){main{display:block}.stats{grid-template-columns:repeat(3,1fr)}iframe{height:600px}}
+</style>
+<header><div><div class="eyebrow">FLY MIKO / CONNECTOME LEARNING</div><h1>脳と身体の、閉ループ学習。</h1><p>実接続のLIF脳 · 出力変換を学習 · 腰の支持なし</p></div>
+<div class="controls"><select id="run" aria-label="学習実行"></select><button id="refresh">最新結果を読込</button></div></header>
+<div id="empty">学習記録がありません。<code>npm run train</code> を実行してください。</div>
+<div class="stats">
+ <div class="stat"><span>脳のニューロン / 結合</span><strong id="network">—</strong></div>
+ <div class="stat"><span>学習世代</span><strong id="generation">—</strong></div>
+ <div class="stat"><span>最良の累積報酬</span><strong id="best-return">—</strong></div>
+ <div class="stat"><span>この20msの脳内スパイク</span><strong id="brain-spikes">—</strong></div>
+ <div class="stat"><span>この20msの出力スパイク</span><strong id="output-spikes">—</strong></div>
+</div>
+<main>
+ <section><iframe id="replay" title="学習した身体の3D再生"></iframe>
+  <p class="note" id="policy-note"></p>
+  <p class="note" id="task-note">3D表示は物理計算で測った姿勢です。再生中に未学習・最良結果・別seedの検証を切り替えられます。</p>
+  <div class="card" id="activity-card">
+   <h2>全脳の発火マップ <span id="activity-time"></span></h2>
+   <p id="activity-message" role="status">発火記録を確認中…</p>
+   <div class="activity-controls">
+    <select id="activity-role" aria-label="ニューロンの絞り込み"><option value="all">全ニューロン</option><option value="input">入力候補</option><option value="internal">内部（入出力候補以外）</option><option value="output">出力候補</option></select>
+    <input id="neuron-search" aria-label="ニューロンID" placeholder="ニューロンIDを入力"><button id="neuron-find">表示</button>
+   </div>
+   <canvas id="neuron-map" width="512" height="271" aria-label="全ニューロンの発火マップ"></canvas>
+   <p class="small">ID順の発火一覧です。解剖学的な位置ではありません。紫→桃→黄が20ms内の1→2→3回以上の発火を示します。</p>
+   <p id="activity-stats"></p><p id="neuron-detail" class="small"></p>
+   <h2>集団の発火数 / 20ms</h2><canvas id="activity-trend" class="chart"></canvas>
+   <p class="small">紫：入力候補 ／ 青：内部 ／ 桃：出力候補。入出力の両方に属する場合は出力に集計。</p>
+   <h2>ニューロン別の発火時系列</h2><canvas id="neuron-raster" class="chart"></canvas>
+   <p class="small">絞り込み内で試行全体の発火数が多い順に最大24個。選択ニューロンは先頭。色は20ms内の発火数、縦線は身体の再生時刻。初期時刻0秒には計測区間がありません。</p>
+  </div>
+ </section>
+ <aside>
+  <div class="card"><div class="row"><h2>学習の推移</h2><span id="status"></span></div><canvas id="learning" class="chart"></canvas>
+   <div class="small">紫：最良累積報酬 ／ 灰：各世代の平均報酬。神経接続は固定し、出力変換のみを更新。</div>
+  </div>
+  <div class="card" id="height-card" hidden><h2>頭の高さ <span id="head-height"></span></h2>
+   <canvas id="height-chart" class="chart"></canvas>
+   <div class="small">再生中の試行：横軸は時間、縦軸は地面から頭の中心までの高さ。</div>
+  </div>
+  <div class="card" id="body-input-card" hidden><h2>全身の接触 → 脳入力</h2>
+   <table><thead><tr><th>部位</th><th>左 N</th><th>右 N</th></tr></thead><tbody id="body-inputs"></tbody></table>
+   <p id="gravity-input" class="small"></p><p class="small">72関節感覚 + 48接触感覚 + 6重力方向 = 126チャネル</p>
+  </div>
+  <div class="card"><h2>下行性ニューロンのスパイク数（20ms集計）</h2><canvas id="spikes" class="chart"></canvas>
+   <div class="small">現在の再生のうち活動量が多い16個を表示。点は実際の神経計算の発火で、外部刺激の頻度ではありません。</div>
+  </div>
+  <div class="card"><h2 id="evaluation-title">別seedで比較</h2>
+   <table><thead><tr><th>条件</th><th>報酬</th><th>試行秒</th><th id="metric-heading">平均頭高 m</th><th>脳寄与</th></tr></thead><tbody id="evaluation"></tbody></table>
+   <div class="small">脳出力遮断：同じ学習済み変換にゼロの脳出力を渡す比較。脳自体の計算は実行します。脳寄与は制御出力（−1〜1）とバイアスのみとの差の絶対値平均で、成績への貢献度ではありません。</div>
+  </div>
+  <div class="card"><h2>実行情報</h2><p id="details"></p>
+   <div class="small">CLIで開始：<code>npm run train</code><br>中断後は同じ設定に <code>--resume --name 実行名</code> を付けて再開。画面は読み取り専用です。</div>
+  </div>
+ </aside>
+</main>
+<div id="error"></div>
+<script type="module" src="/demo/training.js"></script>
+</html>
