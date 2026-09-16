@@ -37,10 +37,10 @@
 
 ## 実行
 
-新規実行（同名の保存先がまだ存在しない場合）:
+先にREADMEのデータ準備手順で初期値を復元してください。新規実行（同名の保存先がまだ存在しない場合）:
 
 ```bash
-npm run train -- --name random-head-bias-02 --iterations 10 --population 10 --workers 1 --seconds 10
+npm run train -- --name random-head-bias-02 --init-from data/reproduction/random-head-bias-02/initial.npz --iterations 10 --population 10 --workers 1 --seconds 10
 ```
 
 既存実行の再開。`--iterations`は到達する総世代数です。

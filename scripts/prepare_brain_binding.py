@@ -20,9 +20,9 @@ def main():
     source = directory / "flywire-neuron-annotations.tsv"
     if not source.exists():
         raise FileNotFoundError(
-            "No local neuron annotations. Automatic download is disabled because redistribution "
+            "No local neuron annotations. This registry-only command does not download data because redistribution "
             "terms for this pinned TSV are unconfirmed. See docs/data-preparation.md; "
-            "the repository does not include these annotations or derived bindings.")
+            "the repository does not include these annotations or derived bindings. To obtain the pinned publisher files explicitly, run scripts/prepare_reproduction.py --download.")
     if hashlib.sha256(source.read_bytes()).hexdigest() != SHA256:
         raise ValueError("Local annotation checksum mismatch; use the pinned source")
     with source.open(encoding="utf-8", newline="") as stream:

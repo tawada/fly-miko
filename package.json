@@ -16,7 +16,9 @@
     "demo:preview": "node scripts/render_demo.cjs --serve",
     "demo:render": "node scripts/render_demo.cjs --render-training",
     "repo:check": "python3 scripts/check_repository.py",
-    "training:archive": ".venv/bin/python -m simulation.generation_archive"
+    "training:archive": ".venv/bin/python -m simulation.generation_archive",
+    "data:prepare": ".venv/bin/python scripts/prepare_reproduction.py --download",
+    "data:verify": ".venv/bin/python scripts/prepare_reproduction.py --verify-only"
   },
   "repository": {
     "type": "git",

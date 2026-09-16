@@ -1,0 +1,52 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "path": "data/brain/flywire-neuron-annotations.tsv",
+      "url": "https://raw.githubusercontent.com/flyconnectome/flywire_annotations/8587524c1748ce5ef2080822a2fc890fc03bf597/supplemental_files/Supplemental_file1_neuron_annotations.tsv",
+      "sha256": "9a4f8b2f843196074431ebd7cd883536afa1be86c8a4ce90970441e8be81d1be",
+      "licenseNote": "Pinned GitHub TSV license unconfirmed; download from publisher, do not bundle. See docs/data-preparation.md."
+    },
+    {
+      "path": "data/brain/upstream/Connectivity_783.parquet",
+      "url": "https://raw.githubusercontent.com/philshiu/Drosophila_brain_model/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/Connectivity_783.parquet",
+      "sha256": "efeb23fb99098e9c390f6869969b2a121a2ee92c833cfc45ecb2c1d8e1af0347",
+      "licenseNote": "Upstream repository MIT notice; FlyWire public-data guidelines also apply. See docs/data-preparation.md."
+    },
+    {
+      "path": "data/brain/upstream/Completeness_783.csv",
+      "url": "https://raw.githubusercontent.com/philshiu/Drosophila_brain_model/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/Completeness_783.csv",
+      "sha256": "bbb847a4cc2caaa7a16349722d220c087317b946d148d4d592d94d250617a311",
+      "licenseNote": "Upstream repository MIT notice; FlyWire public-data guidelines also apply. See docs/data-preparation.md."
+    },
+    {
+      "path": "data/brain/upstream/LICENSE",
+      "url": "https://raw.githubusercontent.com/philshiu/Drosophila_brain_model/91bdd1e7dcf193f3e7ca5a8933497fcef63b7960/LICENSE",
+      "sha256": "3621f6d6476189190e2960fa43f11b275ba4eca848fdac50a1ba2925de6223e8",
+      "licenseNote": "Upstream repository MIT notice; FlyWire public-data guidelines also apply. See docs/data-preparation.md."
+    }
+  ],
+  "graphId": "shiu-flywire-783-91bdd1e7dcf193f3e7ca5a8933497fcef63b7960",
+  "compiledChecksums": {
+    "indptr.npy": "e1c889332d8b63081c22e3e45a2828fa2544e48f8a33fe1fb9f28e24b468dd69",
+    "posts.npy": "c7308be4e010a0944d8fa747a2f70096e0355833bb38744ce218fc793be53867",
+    "weights.npy": "d1e528e02f716416e2ec6b86c4fdf2aa47ce6fdb5911885cdec234821976a540",
+    "neuron-ids.json": "d40028a603f2db5af0f0cd1360b5ca462f421bb724d7ef13ff2ae52b09afbba0",
+    "input-binding.json": "87a3a0d4d83e739cbdd3d86d18de283f37cc2838d674b58792fee0950c6a6bd4",
+    "output-binding.json": "906b56373b9c1207db44cc13fb32879757511b089d055ec59fe744458aad5b11"
+  },
+  "initialFile": "config/reproduction-initial.json",
+  "initialFileSha256": "20db1df1054bc9f4e734d16ff906f946c5159e3aa388e33e01489b103945c0f4",
+  "initialParameterSha256": "17f052c199b1f9ec83a8e44fb517e0f4cd6bc7ac058568333248e5a01f238979",
+  "engineCodeChecksums": {
+    "brain.py": "d6a6636f60ccdc0e6ca22ea93d6c0ba9f606e623e22138b10222869ed5a41a68",
+    "biped.py": "0bdf45c688d8ce416d17ce5715e78d9a9363a4afe3c28300ebf9a13a7d2f0c70",
+    "senses.py": "569641a48388231fdcaeb00472a2d5f82ec36b57d3b397b2c0578fc2ed6df918",
+    "policy.py": "2bf48c268416c5f2f00fbd1b6ceb4d182f6730a8d7b8d51ecbec16dd65f16e56",
+    "closed_loop.py": "ad4e9ea8d3fd21288d90afdf935be05f0eac2ac102a10e340ba26885c9887e98",
+    "tasks.py": "266ce13aec082967daf7bfbd10c9c94260026f299bfaf893710ca1bbba2c4de0",
+    "random_initial.py": "e4c4f1383e3e522d09600bb81b93c53ee448fbbdcc84ece20d202d71a463faa9",
+    "population_search.py": "e2bb87f2ee9bf0be26fb8538873fa10f8e4fe802632d298363288fda90097c06"
+  },
+  "bodyHash": "4f8ad97e15b1cb46d72ed8c96cf35ca97a59f60623b7654c080d86fe4082150a"
+}

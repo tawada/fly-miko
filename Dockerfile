@@ -24,7 +24,7 @@ COPY simulation/ ./simulation/
 COPY config/ ./config/
 COPY third_party/ ./third_party/
 COPY NOTICE.md LICENSES.md ./
-COPY scripts/prepare_brain_binding.py ./scripts/prepare_brain_binding.py
+COPY scripts/prepare_brain_binding.py scripts/prepare_reproduction.py ./scripts/
 
 # Check native MuJoCo loading and a physics step during the image build.
 RUN python -m simulation.train --help \
