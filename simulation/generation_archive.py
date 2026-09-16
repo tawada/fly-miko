@@ -15,7 +15,8 @@ import time
 import numpy as np
 
 from .biped import ROOT
-from .population_search import ALGORITHM, EvaluationCache, next_population, parameter_id
+from .population_search import (ALGORITHM, LEGACY_ALGORITHM, EvaluationCache,
+                                legacy_population, next_population, parameter_id)
 from .storage import atomic_output
 from .train import atomic_json, checkpoint
 
@@ -37,7 +38,13 @@ def reconstruct(state, config):
     # The initial candidate is slot 0 of generation 1, so its score is in history.
     best_score = None
     for record in state['history']:
-        population, roles = next_population(best, previous, scores, rng)
+        algorithm = record.get('algorithm', config['algorithm'])
+        if algorithm == LEGACY_ALGORITHM:
+            population, roles = legacy_population(best, previous, scores, rng)
+        elif algorithm == ALGORITHM:
+            population, roles = next_population(best, previous, scores, rng, record.get('stagnationBefore', 0))
+        else:
+            raise ValueError(f'Unknown generation algorithm: {algorithm}')
         if [parameter_id(p) for p in population] != [r['parameterId'] for r in record['candidates']]:
             raise ValueError(f"Cannot reproduce parameters of generation {record['generation']}")
         scores = np.array([r['return'] for r in record['candidates']])
@@ -107,7 +114,7 @@ def archive_available(directory):
         except BlockingIOError:
             return []
         config = json.loads((directory / 'config.json').read_text())
-        if config['algorithm'] != ALGORITHM:
+        if config['algorithm'] not in (ALGORITHM, LEGACY_ALGORITHM):
             raise ValueError('Generation archives require the retained-population scenario')
         with np.load(directory / 'latest.npz', allow_pickle=False) as saved:
             if str(saved['fingerprint']) != config['fingerprint']:

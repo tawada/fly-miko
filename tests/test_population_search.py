@@ -14,23 +14,22 @@ from simulation.tasks import make_policy, initial_parameters
 
 
 class PopulationTests(unittest.TestCase):
-    def test_exact_composition_and_unmodified_inheritance(self):
-        previous = np.arange(30.).reshape(10, 3)
-        scores = np.array([1, 4, 5, 0, 3, 6, 9, 8, 2, 7])
-        best = np.array([100., 101., 102.])
+    def test_mutations_unique_elite_and_adaptive_scale(self):
+        best = np.zeros(594)
+        previous = np.zeros((10, 594))
+        scores = np.zeros(10)
         population, roles = search.next_population(best, previous, scores, np.random.default_rng(7))
-        self.assertEqual(population.shape, (10, 3))
         np.testing.assert_array_equal(population[0], best)
-        top = np.argsort(-scores)[:5]
-        np.testing.assert_array_equal(population[3:8], previous[top])
-        indices = [int(role.split(':')[1]) for role in roles[8:]]
-        self.assertEqual(len(set(indices)), 2)
-        self.assertFalse(set(indices) & set(top))
-        np.testing.assert_array_equal(population[8:], previous[indices])
-        self.assertEqual(roles[1:3], ['random', 'random'])
-        boot, roles = search.next_population(best, None, None, np.random.default_rng(7))
-        self.assertEqual(boot.shape, (10, 3))
-        self.assertEqual(roles.count('bootstrap-random'), 9)
+        self.assertEqual(len({search.parameter_id(p) for p in population}), 10)
+        self.assertEqual(sum(r.startswith('small-mutation:') for r in roles), 4)
+        self.assertEqual(sum(r.startswith('large-mutation:') for r in roles), 3)
+        self.assertEqual(roles[-2:], ['random', 'random'])
+        wider, _ = search.next_population(best, previous, scores, np.random.default_rng(7), 10)
+        np.testing.assert_allclose(wider[1:8], population[1:8] * 4)
+        np.testing.assert_array_equal(wider[8:], population[8:])
+        boot, _ = search.next_population(best, None, None, np.random.default_rng(7))
+        np.testing.assert_array_equal(boot, population)
+        self.assertEqual(search.mutation_settings(100), search.mutation_settings(10))
 
     def test_cache_persists_and_invalidates_by_every_evaluation_condition(self):
         calls = []
@@ -100,7 +99,7 @@ class PopulationTests(unittest.TestCase):
             self.assertEqual(len(calls), 20)  # baseline is candidate 0, not recomputed
             args.resume = True; args.iterations = 2
             search.train(args)
-            self.assertEqual(len(calls), 24)  # only two new candidates × two episodes
+            self.assertEqual(len(calls), 38)  # nine new candidates × two episodes
             history = json.loads((directory / 'history.json').read_text())
             self.assertEqual([len(g['candidates']) for g in history], [10, 10])
             self.assertEqual(history[1]['candidates'][0]['origin'], 'best')
@@ -113,10 +112,35 @@ class PopulationTests(unittest.TestCase):
                 return original(*pos, **kw)
             with patch.object(search, 'rollout', fail_after_one), self.assertRaises(RuntimeError):
                 search.train(args)
-            self.assertEqual(len(calls), 25)
+            self.assertEqual(len(calls), 39)
             search.train(args)
-            self.assertEqual(len(calls), 28)  # cached partial generation used after restart
+            self.assertEqual(len(calls), 56)  # cached partial generation used after restart
             best = json.loads((directory / 'best.json').read_text())
             values = best['objectiveSummary']['episodeReturns']
             self.assertEqual(best['objectiveSummary']['return'], sum(values) / 2)
             self.assertTrue((directory / 'best-second.json').exists())
+            from simulation.generation_archive import archive_available
+            self.assertEqual(archive_available(directory), [1, 2, 3])
+            # Evaluation condition changes must still be rejected.
+            args.seconds = .2; args.iterations = 4
+            with self.assertRaisesRegex(ValueError, 'conditions/code differ'):
+                search.train(args)
+            # A legacy checkpoint upgrades without losing evaluated episodes or
+            # the ability to reconstruct generations on both sides of the switch.
+            args.name = 'legacy'; args.seconds = .1; args.resume = False; args.iterations = 2
+            def old_selection(best, previous, scores, rng, stagnation=0):
+                return search.legacy_population(best, previous, scores, rng)
+            with patch.object(search, 'ALGORITHM', search.LEGACY_ALGORITHM), \
+                    patch.object(search, 'next_population', old_selection):
+                legacy = search.train(args)
+            original_checkpoint = (legacy / 'latest.npz').read_bytes()
+            old_config = json.loads((legacy / 'config.json').read_text())
+            calls_before = len(calls)
+            args.resume = True; args.iterations = 3
+            search.train(args)
+            self.assertEqual(len(calls) - calls_before, 18)
+            self.assertEqual((legacy / 'before-mutation-v2/latest.npz').read_bytes(), original_checkpoint)
+            upgraded = json.loads((legacy / 'config.json').read_text())
+            self.assertEqual(upgraded['fingerprint'], old_config['fingerprint'])
+            self.assertEqual(upgraded['searchAlgorithm'], search.ALGORITHM)
+            self.assertEqual(archive_available(legacy), [1, 2, 3])

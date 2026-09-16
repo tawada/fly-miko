@@ -27,8 +27,8 @@ def checkpoint(path, **values):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--name", default="random-head-bias-02")
-    parser.add_argument("--algorithm", choices=["retained"], default="retained",
-                        help="retained: ten candidates, mean over two fixed random initial states")
+    parser.add_argument("--algorithm", choices=["mutation", "retained"], default="mutation",
+                        help="mutation: elite + 7 mutations + 2 random; retained is a compatibility alias")
     parser.add_argument("--init-from", help="Initialize a new retained run from an old latest.npz best vector")
     parser.add_argument("--resume", action="store_true")
     parser.add_argument("--check-storage", action="store_true",
@@ -53,7 +53,7 @@ def main():
         check_output_directory(RUNS / args.name)
         print(f"Storage check passed: {RUNS / args.name}")
         return
-    if args.algorithm == "retained":
+    if args.algorithm in ("retained", "mutation"):
         from .population_search import train as train_population
         if args.population != 10 or args.task != "head-height":
             parser.error("Retained scenario requires --population 10 --task head-height")

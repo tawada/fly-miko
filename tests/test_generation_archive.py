@@ -6,7 +6,7 @@ import unittest
 import numpy as np
 
 from simulation.generation_archive import selected, archive_available, export_recording
-from simulation.population_search import ALGORITHM, EvaluationCache, next_population, aggregate
+from simulation.population_search import ALGORITHM, EvaluationCache, next_population, aggregate, stalled_generations
 from simulation.train import atomic_json, checkpoint
 
 
@@ -29,10 +29,12 @@ class GenerationArchiveTests(unittest.TestCase):
             history = []
             populations = {}
             def run(p, e):
-                metrics = {'return': float(p[0] + e['seed']), 'survivalSeconds': 10.}
+                # Constant scores deliberately exercise both stagnation thresholds.
+                metrics = {'return': float(e['seed']), 'survivalSeconds': 10.}
                 return metrics, {'frames': [{'timeSeconds': 0, 'jointAngles': [float(p[0])]}], 'metrics': metrics}
             for g in range(1, 13):
-                population, roles = next_population(best, previous, scores, rng)
+                stagnation = stalled_generations(history)
+                population, roles = next_population(best, previous, scores, rng, stagnation)
                 populations[g] = population.copy()
                 results = [aggregate([cache.evaluate(p, e, run)[0] for e in episodes]) for p in population]
                 for r, role in zip(results, roles): r['origin'] = role
@@ -40,7 +42,9 @@ class GenerationArchiveTests(unittest.TestCase):
                 if best_score is None: best_score = scores[0]
                 if scores.max() > best_score:
                     best_score = scores.max(); best = population[np.argmax(scores)].copy()
-                history.append({'generation': g, 'candidates': results})
+                history.append({'generation': g, 'candidates': results,
+                                'algorithm': ALGORITHM, 'stagnationBefore': stagnation,
+                                'generationBestReturn': float(scores.max())})
                 previous = population
             state = {'initial': initial.tolist(), 'history': history, 'generation': 12}
             checkpoint(directory / 'latest.npz', fingerprint='test', state=json.dumps(state))
